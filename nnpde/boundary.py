@@ -4,6 +4,7 @@ Define the initial conditions for the problem
 import theano
 import theano.tensor as T
 
+from pde import x
 
 class Boundary(object):
     def __init__(self):
@@ -11,7 +12,6 @@ class Boundary(object):
         # initial distribution coefficient
         tau = 10.0
 
-        x = T.iscalar('x')
 
         self.eq = T.exp((-1.) * tau * x)
 

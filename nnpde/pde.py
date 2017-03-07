@@ -4,17 +4,17 @@ Define the PDE to be solved by NNPDE
 import theano
 import theano.tensor as T
 
+x = T.iscalar('x')
+t = T.iscalar('t')
+
 class PDE(object):
-    def __init__(self):
+    def __init__(self, input):
 
         # Diffusion coefficient
         D = 1.0
 
-        x = T.iscalar('x')
-        t = T.iscalar('t')
-        rho = T.iscalar('p')
+        self.eq = D * T.grad(T.grad(input[0], x), x) - T.grad(input[0],t)
 
-        self.eq = D * T.grad(T.grad(rho, x)) - T.grad(rho,t)
 
-        self.func = theano.function([rho, x,t], self.eq)
+        self.func = theano.function([x,t], self.eq)
 

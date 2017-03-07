@@ -62,21 +62,23 @@ class MLP(object):
             activation=None
         )
 
+        self.output = self.ip_layer_2.output
+
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
-        self.loss_layer = LossLayer(input=self.ip_layer_2.output)
+        self.loss_layer = LossLayer(input=self.output)
         # end-snippet-2 start-snippet-3
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small
         self.L1 = (
-            abs(self.ip_layer1.W).sum()
+            abs(self.ip_layer_1.W).sum()
             + abs(self.ip_layer_2.W).sum()
         )
 
         # square of L2 norm ; one regularization option is to enforce
         # square of L2 norm to be small
         self.L2_sqr = (
-            (self.ip_layer1.W ** 2).sum()
+            (self.ip_layer_1.W ** 2).sum()
             + (self.ip_layer_2.W ** 2).sum()
         )
 
@@ -89,7 +91,7 @@ class MLP(object):
 
         # the parameters of the model are the parameters of the two layer it is
         # made out of
-        self.params = self.ip_layer1.params + self.ip_layer_2.params
+        self.params = self.ip_layer_1.params + self.ip_layer_2.params
         # end-snippet-3
 
         # keep track of model input

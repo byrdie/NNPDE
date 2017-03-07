@@ -1,3 +1,9 @@
+
+
+from __future__ import print_function
+
+__docformat__ = 'restructedtext en'
+
 import os
 import sys
 import timeit
@@ -8,6 +14,8 @@ import theano
 import theano.tensor as T
 
 from mlp import MLP
+
+from pde import x,t
 
 def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_size=20, n_hidden=200):
     """
@@ -36,7 +44,7 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
 
     rng = numpy.random.RandomState(1234)
 
-    num_ex = 1e6
+    num_ex = 1000000
 
     t_min = 0.0
     t_max = 20.0
@@ -44,17 +52,17 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
     x_min = -3.0
     x_max = 3.0
 
-    train_set_x = rng.uniform(x_min,x_max,(1,2))
-    train_set_t = rng.uniform(t_min,t_max,num_ex)
-    #train_set_x = numpy.transpose(numpy.vstack((train_set_s,train_set_t)))
+    train_set_x = theano.shared(numpy.asarray(rng.uniform(x_min,x_max,num_ex), dtype=theano.config.floatX), borrow=True)
+    train_set_t = theano.shared(numpy.asarray(rng.uniform(t_min,t_max,num_ex), dtype=theano.config.floatX), borrow=True)
+    train_set_X = T.stack([train_set_x,train_set_t])
 
-    valid_set_x = rng.uniform(x_min,x_max,num_ex)
-    valid_set_t = rng.uniform(t_min,t_max,num_ex)
-    #valid_set_x = numpy.transpose(numpy.vstack((valid_set_s, valid_set_t)))
+    valid_set_x = theano.shared(numpy.asarray(rng.uniform(x_min,x_max,num_ex), dtype=theano.config.floatX), borrow=True)
+    valid_set_t = theano.shared(numpy.asarray(rng.uniform(t_min,t_max,num_ex), dtype=theano.config.floatX), borrow=True)
+    valid_set_X = T.stack([valid_set_x,valid_set_t])
 
-    test_set_x = rng.uniform(x_min,x_max,num_ex)
-    test_set_t = rng.uniform(t_min,t_max,num_ex)
-    #test_set_x = numpy.transpose(numpy.vstack((test_set_s, test_set_t)))
+    test_set_x = theano.shared(numpy.asarray(rng.uniform(x_min,x_max,num_ex), dtype=theano.config.floatX), borrow=True)
+    test_set_t = theano.shared(numpy.asarray(rng.uniform(t_min,t_max,num_ex), dtype=theano.config.floatX), borrow=True)
+    test_set_X = T.stack([test_set_x,test_set_t])
 
 
     # compute number of minibatches for training, validation and testing
@@ -69,15 +77,13 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
 
     # allocate symbolic variables for the data
     index = T.lscalar()  # index to a [mini]batch
-    x = T.iscalar('x')
-    t = T.iscalar('t')
-
-
+    #x = T.iscalar('x')
+    #t = T.iscalar('t')
 
     # construct the MLP class
     classifier = MLP(
         rng=rng,
-        input=[x,t],
+        input=T.stack([x,t]),
         n_in=2,
         n_hidden=n_hidden,
         n_out=1
@@ -88,7 +94,7 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
     # the model plus the regularization terms (L1 and L2); cost is expressed
     # here symbolically
     cost = (
-        classifier.loss
+        classifier.loss(x,t)
         + L1_reg * classifier.L1
         + L2_reg * classifier.L2_sqr
     )
