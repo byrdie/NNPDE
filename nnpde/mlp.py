@@ -3,6 +3,7 @@ import numpy
 
 import theano
 import theano.tensor as T
+from theano import pp
 
 from hiddenLayer import HiddenLayer
 from lossLayer import LossLayer
@@ -18,7 +19,7 @@ class MLP(object):
     class).
     """
 
-    def __init__(self, rng, input, n_in, n_hidden, n_out):
+    def __init__(self, rng, x, t, n_in, n_hidden, n_out):
         """Initialize the parameters for the multilayer perceptron
 
         :type rng: numpy.random.RandomState
@@ -40,6 +41,7 @@ class MLP(object):
         which the labels lie
 
         """
+        input = T.stack([x, t])
 
         # Since we are dealing with a one hidden layer MLP, this will translate
         # into a HiddenLayer with a tanh activation function connected to the
@@ -64,9 +66,11 @@ class MLP(object):
 
         self.output = self.ip_layer_2.output
 
+        print pp(self.output)
+
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
-        self.loss_layer = LossLayer(input=self.output)
+        self.loss_layer = LossLayer(input=self.output, x=x, t=t)
         # end-snippet-2 start-snippet-3
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small

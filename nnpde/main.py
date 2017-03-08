@@ -12,12 +12,11 @@ import numpy
 
 import theano
 import theano.tensor as T
+from theano import pp
 
 from mlp import MLP
 
-from pde import x,t
-
-def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_size=20, n_hidden=200):
+def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_size=1, n_hidden=200):
     """
     Demonstrate stochastic gradient descent optimization for a multilayer
     perceptron
@@ -77,13 +76,15 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
 
     # allocate symbolic variables for the data
     index = T.lscalar()  # index to a [mini]batch
-    #x = T.iscalar('x')
-    #t = T.iscalar('t')
+    x = T.fscalar('x')
+    t = T.fscalar('t')
+
 
     # construct the MLP class
     classifier = MLP(
         rng=rng,
-        input=T.stack([x,t]),
+        x=x,
+        t=t,
         n_in=2,
         n_hidden=n_hidden,
         n_out=1
@@ -94,7 +95,7 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
     # the model plus the regularization terms (L1 and L2); cost is expressed
     # here symbolically
     cost = (
-        classifier.loss(x,t)
+        classifier.loss()
         + L1_reg * classifier.L1
         + L2_reg * classifier.L2_sqr
     )
@@ -104,19 +105,19 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
     # by the model on a minibatch
     test_model = theano.function(
         inputs=[index],
-        outputs=classifier.loss,
+        outputs=classifier.loss(),
         givens={
-            x: test_set_x[index * batch_size:(index + 1) * batch_size],
-            t: test_set_t[index * batch_size:(index + 1) * batch_size]
+            x: test_set_x[index],
+            t: test_set_t[index]
         }
     )
 
     validate_model = theano.function(
         inputs=[index],
-        outputs=classifier.loss,
+        outputs=classifier.loss(),
         givens={
-            x: valid_set_x[index * batch_size:(index + 1) * batch_size],
-            t: valid_set_t[index * batch_size:(index + 1) * batch_size]
+            x: valid_set_x[index],
+            t: valid_set_t[index]
         }
     )
 
@@ -145,8 +146,8 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
         outputs=cost,
         updates=updates,
         givens={
-            x: train_set_x[index * batch_size: (index + 1) * batch_size],
-            t: train_set_t[index * batch_size: (index + 1) * batch_size]
+            x: train_set_x[index],
+            t: train_set_t[index]
         }
     )
     # end-snippet-5
@@ -157,7 +158,7 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
     print('... training')
 
     # early-stopping parameters
-    patience = 10000  # look as this many examples regardless
+    patience = 10  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is
                            # found
     improvement_threshold = 0.995  # a relative improvement of this much is

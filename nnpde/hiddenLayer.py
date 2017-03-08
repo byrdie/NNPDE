@@ -3,6 +3,7 @@ import numpy
 
 import theano
 import theano.tensor as T
+from theano import pp
 
 '''
 Typical hidden layer of a MLP: units are fully-connected and have

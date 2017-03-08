@@ -4,10 +4,9 @@ Define the initial conditions for the problem
 import theano
 import theano.tensor as T
 
-from pde import x
 
 class Boundary(object):
-    def __init__(self):
+    def __init__(self, x):
 
         # initial distribution coefficient
         tau = 10.0
