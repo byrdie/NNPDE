@@ -41,7 +41,7 @@ class MLP(object):
         which the labels lie
 
         """
-        input = T.stack([x, t])
+        input = T.transpose(T.stack([x, t]))
 
         # Since we are dealing with a one hidden layer MLP, this will translate
         # into a HiddenLayer with a tanh activation function connected to the

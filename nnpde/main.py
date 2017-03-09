@@ -16,7 +16,7 @@ from theano import pp
 
 from mlp import MLP
 
-def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_size=1, n_hidden=200):
+def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_size=1, n_hidden=4):
     """
     Demonstrate stochastic gradient descent optimization for a multilayer
     perceptron
@@ -53,15 +53,15 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
 
     train_set_x = theano.shared(numpy.asarray(rng.uniform(x_min,x_max,num_ex), dtype=theano.config.floatX), borrow=True)
     train_set_t = theano.shared(numpy.asarray(rng.uniform(t_min,t_max,num_ex), dtype=theano.config.floatX), borrow=True)
-    train_set_X = T.stack([train_set_x,train_set_t])
+    train_set_X = T.transpose(T.stack([train_set_x,train_set_t]))
 
     valid_set_x = theano.shared(numpy.asarray(rng.uniform(x_min,x_max,num_ex), dtype=theano.config.floatX), borrow=True)
     valid_set_t = theano.shared(numpy.asarray(rng.uniform(t_min,t_max,num_ex), dtype=theano.config.floatX), borrow=True)
-    valid_set_X = T.stack([valid_set_x,valid_set_t])
+    valid_set_X = T.transpose(T.stack([valid_set_x,valid_set_t]))
 
     test_set_x = theano.shared(numpy.asarray(rng.uniform(x_min,x_max,num_ex), dtype=theano.config.floatX), borrow=True)
     test_set_t = theano.shared(numpy.asarray(rng.uniform(t_min,t_max,num_ex), dtype=theano.config.floatX), borrow=True)
-    test_set_X = T.stack([test_set_x,test_set_t])
+    test_set_X = T.transpose(T.stack([test_set_x,test_set_t]))
 
 
     # compute number of minibatches for training, validation and testing
@@ -78,6 +78,7 @@ def nnpde(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000, batch_s
     index = T.lscalar()  # index to a [mini]batch
     x = T.fscalar('x')
     t = T.fscalar('t')
+    # inp = T.transpose(T.stack([x,t]))
 
 
     # construct the MLP class
